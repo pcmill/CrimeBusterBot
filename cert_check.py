@@ -29,7 +29,11 @@ class CertChecker:
         cert = ssl.get_server_certificate((self.domain, 443))
         self.rcert = OpenSSL.crypto.load_certificate(
             OpenSSL.crypto.FILETYPE_PEM, cert)
-        return all((self._verify_date(), self._verify_subject(owner)))
+        return all((
+            self._verify_date(),
+            self._verify_subject(owner),
+            self._verify_issuer(),
+        ))
 
     def _get_domain(self, url):
         if url.startswith('http'):
@@ -37,6 +41,7 @@ class CertChecker:
             return parsed.netloc
         else:
             print('URL must start with scheme (http / https)')
+            self.logger.warning('URL must start with scheme (http / https)')
             return
 
     def _verify_date(self):
@@ -65,7 +70,7 @@ class CertChecker:
         subj_items = self.rcert.get_subject().get_components()
         org = ''
         cn = False
-        for key, val in dict(list(subj_items)).items():
+        for key, val in dict(subj_items).items():
             val = val.decode('utf-8').lower()
             if key == b'O' and org.lower() in val:
                 org = True
@@ -74,3 +79,9 @@ class CertChecker:
                 cn = True
 
         return all((org, cn))
+
+    def _verify_issuer(self):
+        issuer_obj = self.rcert.get_issuer()
+        issuer_comp = issuer_obj.get_components()#.decode('utf-8')
+        print(issuer_comp)
+        return
