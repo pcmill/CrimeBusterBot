@@ -1,0 +1,5 @@
+*.py[co]
+*.swp
+*.tmp
+*.temp
+__pycache__/
