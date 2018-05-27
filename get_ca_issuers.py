@@ -7,15 +7,22 @@ class CAIssuersParser:
 
     # https://en.wikipedia.org/wiki/Certificate_authority#Providers
 
-    URLS = [
-        'https://hg.mozilla.org/releases/mozilla-beta/raw-file/tip/security/nss/lib/ckfw/builtins/certdata.txt',
-    ]
+    CA_LISTS = {
+        'mozilla': {
+            'list': ''.join([
+                'https://hg.mozilla.org/releases/mozilla-beta/raw-file/',
+                'tip/security/nss/lib/ckfw/builtins/certdata.txt',
+            ]),
+            'pattern': '# Issuer ',
+        }
+    }
     ISSUERS = []
 
+    # TODO: parse the other lists and store the CA's into a file
     def parse_issuers(self):
-        resp = requests.get(self.URLS[0])
+        resp = requests.get(self.CA_LISTS['mozilla']['list'])
         raw_list = resp.text
-        pattern = '# Issuer: '
+        pattern = self.CA_LISTS['mozilla']['pattern']
         for line in raw_list.split('\n'):
             if line.startswith(pattern):
                 issuer = line.lstrip(pattern)
