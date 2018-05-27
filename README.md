@@ -16,6 +16,7 @@ using content analysis and machine learning supervised algorithms.
 
 ### Possible improvments
 
-- Doman scanners, such as *nmap*, *striker* etc.
+- Domain scanners, such as *nmap*, *striker* etc.
+- DNS analysers, such as *https://dnslytics.com*.
 - Online analysers, such as [*urlvoid*](http://www.urlvoid.com/).
 - Extend existing features.
