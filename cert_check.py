@@ -22,6 +22,7 @@ class CertChecker:
         self.domain = None
 
     def check(self, url, owner):
+        print('Initialising TLS/SSL certificate check ...')
         self.domain = self._get_domain(url)
         if not self.domain:
             return
@@ -32,7 +33,7 @@ class CertChecker:
         return all((
             self._verify_date(),
             self._verify_subject(owner),
-            self._verify_issuer(),
+            #self._verify_issuer(),  # not implemented
         ))
 
     def _get_domain(self, url):
@@ -45,6 +46,7 @@ class CertChecker:
             return
 
     def _verify_date(self):
+        print('Verifying certificate dates ...')
         utc = pytz.UTC
         # get notBefore
         not_before_str = self.rcert.get_notBefore().decode('utf-8')
@@ -59,6 +61,7 @@ class CertChecker:
         # check the cert
         if (not_before <= datetime.datetime.now(pytz.timezone('UTC'))
                 < not_after):
+            print('Dates - OK')
             return True
 
         print('Certificate has expired: %s - %s' % (not_before, not_after))
@@ -67,19 +70,23 @@ class CertChecker:
         return
 
     def _verify_subject(self, org):
+        print('Verifying certificate subject ...')
         subj_items = self.rcert.get_subject().get_components()
         org = ''
         cn = False
         for key, val in dict(subj_items).items():
             val = val.decode('utf-8').lower()
             if key == b'O' and org.lower() in val:
+                print('Organisation - OK')
                 org = True
 
             if key == b'CN' and self.domain in val:
+                print('Domain - OK')
                 cn = True
 
         return all((org, cn))
 
+    # TODO
     def _verify_issuer(self):
         issuer_obj = self.rcert.get_issuer()
         issuer_comp = issuer_obj.get_components()#.decode('utf-8')
