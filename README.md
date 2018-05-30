@@ -1,6 +1,10 @@
 # CrimeBusterBot
 Project for the Dutch Open Hackathon 2018 #doh18
 
+THIS IS NOT A FINISHED PRODUCT. These are sniplets of code to proof and demonstrate our model for the Hackathon. A lot of the code is designed to use the NL zone file, which is not public data. So you will not be able to run this.
+
+### High Risk Site dumps 
+You will see some text files with high risk/fake sites. These were auto detected by our software. It can absolutly have 'false positives', meaning it can include legitimate sites. We will try to improve our engine over time, to lower the risk of 'false positives'.
 
 ### Introduction
 
