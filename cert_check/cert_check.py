@@ -14,6 +14,9 @@ class CertChecker:
     # common fields:
     # https://en.wikipedia.org/wiki/Public_key_certificate#Common_fields
 
+    # example code:
+    # https://www.programcreek.com/python/example/62606/ssl.get_server_certificate
+
     logger = logging.getLogger('cert-check')
 
     def __init__(self):
@@ -85,6 +88,18 @@ class CertChecker:
                 cn = True
 
         return all((org, cn))
+
+    def get_badssl_cert(self, hostname='expired.badssl.com', port=443):
+         conn = ssl.create_connection((hostname, port))
+         context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+         sock = context.wrap_socket(conn, server_hostname=hostname)
+         return ssl.DER_cert_to_PEM_cert(sock.getpeercert(True))
+
+     def get_extensions(self):
+         ext_cnt = self.rcert.get_extension_count()
+         for i in range(ext_cnt):
+             ext_data = self.rcert.get_extension(i).get_data()
+             print(ext_data)
 
     # TODO
     def _verify_issuer(self):

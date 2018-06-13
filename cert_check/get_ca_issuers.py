@@ -1,6 +1,7 @@
 #!/usr/local/bin env
 
 import requests
+from urllib.parse import urlparse as urlparser
 
 class CAIssuersParser:
     '''Parses list of CA's from Mozilla, Chrome, Opera, iOS.'''
@@ -9,10 +10,10 @@ class CAIssuersParser:
 
     CA_LISTS = {
         'mozilla': {
-            'list': ''.join([
+            'list': urlparser.urljoin(
                 'https://hg.mozilla.org/releases/mozilla-beta/raw-file/',
                 'tip/security/nss/lib/ckfw/builtins/certdata.txt',
-            ]),
+            ),
             'pattern': '# Issuer ',
         }
     }
