@@ -1,9 +1,11 @@
 #!/usr/local/bin env
 
+import binascii
 import datetime
 import logging
 import OpenSSL
 import pytz
+import re
 import ssl
 from urllib.parse import urlparse as urlparser
 
@@ -33,10 +35,11 @@ class CertChecker:
         cert = ssl.get_server_certificate((self.domain, 443))
         self.rcert = OpenSSL.crypto.load_certificate(
             OpenSSL.crypto.FILETYPE_PEM, cert)
+        self._get_extensions()
         return all((
             self._verify_date(),
             self._verify_subject(owner),
-            #self._verify_issuer(),  # not implemented
+            #self._verify_issuer(),  # WIP
         ))
 
     def _get_domain(self, url):
@@ -44,7 +47,6 @@ class CertChecker:
             parsed = urlparser(url)
             return parsed.netloc
         else:
-            print('URL must start with scheme (http / https)')
             self.logger.warning('URL must start with scheme (http / https)')
             return
 
@@ -89,21 +91,29 @@ class CertChecker:
 
         return all((org, cn))
 
-    def get_badssl_cert(self, hostname='expired.badssl.com', port=443):
-         conn = ssl.create_connection((hostname, port))
-         context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-         sock = context.wrap_socket(conn, server_hostname=hostname)
-         return ssl.DER_cert_to_PEM_cert(sock.getpeercert(True))
+    def _get_extensions(self):
+        '''Gets data from extensions.'''
 
-     def get_extensions(self):
-         ext_cnt = self.rcert.get_extension_count()
-         for i in range(ext_cnt):
-             ext_data = self.rcert.get_extension(i).get_data()
-             print(ext_data)
+        self.logger.info('rcert: %s' % self.rcert)
+        if self.rcert:
+            rcert_pat = re.compile('.+')
+            ext_cnt = self.rcert.get_extension_count()
+            for i in range(ext_cnt):
+                ext_data = self.rcert.get_extension(i).get_data()
+                bytes2utf8 = ext_data.decode('utf-8', errors='ignore')
+                utf82ascii = bytes2utf8.encode('ascii', errors='ignore')#.decode('utf-8')
+                #printable_str = re.sub(r'[^\x00-\x7f]', r'', utf82ascii)
+                printable_str = binascii.unhexlify(bytes2utf8.replace(' ', ''))
+                print(printable_str)
+                self.logger.info(ext_data)
 
     # TODO
     def _verify_issuer(self):
         issuer_obj = self.rcert.get_issuer()
         issuer_comp = issuer_obj.get_components()#.decode('utf-8')
-        print(issuer_comp)
+        self.logger.debug(issuer_comp)
         return
+
+
+if __name__ == '__main__':
+    CertChecker().check('https://google.com', 'google.com')
