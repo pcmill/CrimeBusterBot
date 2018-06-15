@@ -7,6 +7,8 @@ import OpenSSL
 import pytz
 import re
 import ssl
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 from urllib.parse import urlparse as urlparser
 
 
@@ -42,6 +44,23 @@ class CertChecker:
             self._verify_subject(owner),
             #self._verify_issuer(),  # WIP
         ))
+
+    def _get_extensions(self, content):
+        '''Gets data from extensions.'''
+
+        exts = content.extensions
+        # extensions is an array
+        # extensions can be extracted using OID, list of OID's:
+        # https://cryptography.io/en/latest/x509/reference/#object-identifiers
+
+
+    def _get_content(self):
+        '''Decrypts certificate and returns its content.'''
+
+        # https://stackoverflow.com/a/16899645
+        cert = ssl.get_server_certificate((self.domain, 443))
+        bycert = cert.encode('utf-8')
+        return x509.load_pem_x509_certificate(bycert, default_backend())
 
     def _get_domain(self, url):
         if url.startswith('http'):
@@ -91,23 +110,6 @@ class CertChecker:
                 cn = True
 
         return all((org, cn))
-
-    def _get_extensions(self):
-        '''Gets data from extensions.'''
-
-        self.logger.info('rcert: %s' % self.rcert)
-        if self.rcert:
-            rcert_pat = re.compile('.+')
-            ext_cnt = self.rcert.get_extension_count()
-            for i in range(ext_cnt):
-                ext_data = self.rcert.get_extension(i).get_data()
-                # try using `latin1` or other encoding
-                bytes2utf8 = ext_data.decode('utf-8', errors='ignore')
-                utf82ascii = bytes2utf8.encode('ascii', errors='ignore')#.decode('utf-8')
-                #printable_str = re.sub(r'[^\x00-\x7f]', r'', utf82ascii)
-                printable_str = binascii.unhexlify(bytes2utf8.replace(' ', ''))
-                print(printable_str)
-                self.logger.info(ext_data)
 
     # TODO
     def _verify_issuer(self):
