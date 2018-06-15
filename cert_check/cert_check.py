@@ -32,6 +32,7 @@ class CertChecker:
         if not self.domain:
             return
 
+        # try this: https://github.com/fschulze/check-tls-certs/blob/master/check_tls_certs.py#L59-L71
         cert = ssl.get_server_certificate((self.domain, 443))
         self.rcert = OpenSSL.crypto.load_certificate(
             OpenSSL.crypto.FILETYPE_PEM, cert)
@@ -100,6 +101,7 @@ class CertChecker:
             ext_cnt = self.rcert.get_extension_count()
             for i in range(ext_cnt):
                 ext_data = self.rcert.get_extension(i).get_data()
+                # try using `latin1` or other encoding
                 bytes2utf8 = ext_data.decode('utf-8', errors='ignore')
                 utf82ascii = bytes2utf8.encode('ascii', errors='ignore')#.decode('utf-8')
                 #printable_str = re.sub(r'[^\x00-\x7f]', r'', utf82ascii)
