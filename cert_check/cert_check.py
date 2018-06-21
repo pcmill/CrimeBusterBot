@@ -110,3 +110,4 @@ class CertChecker:
 
 if __name__ == '__main__':
     CertChecker('https://google.com').check()
+#    CertChecker('http://admkant.nl/').check()
