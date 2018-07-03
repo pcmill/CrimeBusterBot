@@ -6,3 +6,5 @@ https://www.rechtspraak.nl/Registers/Paginas/Webservice-Centraal-Insolventieregi
 
 IBAN/Phone check: Rate limited :-(
 http://oplichter.eu/check
+
+https://www.signal-arnaques.com/en/api
