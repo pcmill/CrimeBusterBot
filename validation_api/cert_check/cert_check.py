@@ -52,6 +52,7 @@ class CertChecker:
                 return
 
         self.logger.info('Domain: {0}'.format(domain))
+        print(domain)
         return domain
 
     def _get_content(self):
@@ -60,43 +61,53 @@ class CertChecker:
         for more details.
         '''  # noqa: E501
         self.logger.info('Getting certificate ...')
+        print('Getting certificate ...')
         # https://stackoverflow.com/a/16899645
         cert = ssl.get_server_certificate((self.domain, 443))
         bycert = cert.encode('utf-8')
         content = x509.load_pem_x509_certificate(bycert, default_backend())
         self.logger.info(content)
+        print('Done')
         return content
 
     def _verify_version(self):
         '''Verifies certificate version.'''
         self.logger.info('Verifying certificate version ...')
+        print('Verifying certificate version ...')
         try:
             version = self.content.version
             self.logger.info('Version: {0}'.format(version))
+            print('Done')
             return True
         except x509.InvalidVersion as ex:
             self.logger.warning('Invalid certificate version: {0}'.format(ex))
+            print('Invalid certificate version: {0}'.format(ex))
             return
 
     def _verify_date(self):
         '''Verifies certificate date.'''
         self.logger.info('Verifying certificate dates ...')
+        print('Verifying certificate dates ...')
         # get notBefore
         not_before = self.content.not_valid_before
         # get notAfter
         not_after = self.content.not_valid_after
         # check the cert
-        if (not_before <= datetime.datetime.utcnow() < not_after):
+        if not_before <= datetime.datetime.utcnow() < not_after:
             self.logger.info('Dates - OK')
+            print('Done')
             return True
 
         self.logger.warning('Certificate has expired: %s - %s'
+                            % (not_before, not_after))
+        print('Certificate has expired: %s - %s'
                             % (not_before, not_after))
         return
 
     # TODO
     def _verify_subject(self):
         self.logger.info('Verifying certificate subject ...')
+        print('Verifying certificate subject ...')
         for attribute in self.content.subject:
             key = attribute.oid._name
             val = attribute.value
@@ -104,6 +115,7 @@ class CertChecker:
             # check if domain name coinsides with the Common Name
             if key == 'commonName' and self.domain.lower() in val.lower():
                 self.logger.info(self.domain, val)
+                print('Done')
                 return True
 
         return
@@ -116,6 +128,7 @@ class CertChecker:
             x509.SubjectAlternativeName)
         self.logger.info(
             'SAN: {0}'.format(san.value.get_values_for_type(x509.DNSName)))
+        return True
 
     # TODO
     def _verify_issuer(self):
