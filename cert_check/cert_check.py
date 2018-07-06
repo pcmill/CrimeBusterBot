@@ -13,14 +13,16 @@ class CertChecker:
     '''Verifies the TLS/SSL certificate of a website.'''
 
     logger = logging.getLogger('cbb.cert-check')
+    logger.setLevel('INFO')
 
     def __init__(self, url):
         # see also https://stackoverflow.com/a/7691293
-        self.domain = self._get_domain(url)
+        self.url = url
+        self.domain = self._get_domain()
         self.content = self._get_content()
 
     def check(self):
-        '''Main publick check function.'''
+        '''Main public check function.'''
         self.logger.info('Initialising TLS/SSL certificate check ...')
         if not self.domain:
             return
@@ -33,17 +35,24 @@ class CertChecker:
             self._get_extensions(),
         ))
 
-    def _get_domain(self, url):
+    def _get_domain(self):
         '''Extracts domain name from the URL.'''
         self.logger.info('Getting domain ...')
-        if url.startswith('http'):
+        parsed = urlparser(self.url)
+        if parsed.netloc:
+            domain = parsed.netloc
+        else:
+            self.logger.warning('URL must start with scheme (http / https).')
+            url = '//{0}'.format(self.url)
             parsed = urlparser(url)
             domain = parsed.netloc
-            self.logger.info('Domain: {0}'.format(domain))
-            return domain
-        else:
-            self.logger.warning('URL must start with scheme (http / https)')
-            return
+            if not domain:
+                self.logger.error(
+                    'Error while parsing the URL. Check the format.')
+                return
+
+        self.logger.info('Domain: {0}'.format(domain))
+        return domain
 
     def _get_content(self):
         '''Decrypts certificate and returns `Certificate` object.
@@ -105,7 +114,8 @@ class CertChecker:
         self.logger.info('Verifying certificate extensions ...')
         san = self.content.extensions.get_extension_for_class(
             x509.SubjectAlternativeName)
-        self.logger.info('SAN: {0}'.format(san.value.get_values_for_type(x509.DNSName)))
+        self.logger.info(
+            'SAN: {0}'.format(san.value.get_values_for_type(x509.DNSName)))
 
     # TODO
     def _verify_issuer(self):
@@ -115,9 +125,3 @@ class CertChecker:
             key = attribute.oid._name
             val = attribute.value
             self.logger.info('{0}: {1}'.format(key, val))
-
-
-#if __name__ == '__main__':
-#    CertChecker('https://google.com').check()
-#    CertChecker('https://yahoo.com').check()
-#    CertChecker('http://admkant.nl/').check()
