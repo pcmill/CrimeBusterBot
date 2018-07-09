@@ -89,14 +89,9 @@ def upload():
 
         # Make prediction
         preds = model_predict(file_path, model)
-        print(preds)
         prediction = preds.tolist()
-        preds = preds.argmax(axis=-1)
-        print(preds)
 
         os.remove(file_path)
-
-        print(prediction)
 
         return json.dumps({
             'fake': round(prediction[0][0], 3),
