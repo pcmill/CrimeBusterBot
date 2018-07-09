@@ -3,6 +3,7 @@
 import datetime
 import logging
 import pytz
+import requests
 import ssl
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -18,6 +19,8 @@ class CertChecker:
     def __init__(self, url):
         # see also https://stackoverflow.com/a/7691293
         self.url = url
+        print(requests.get(self.url))
+
         self.domain = self._get_domain()
         self.content = self._get_content()
 
@@ -64,7 +67,9 @@ class CertChecker:
         print('Getting certificate ...')
         # https://stackoverflow.com/a/16899645
         cert = ssl.get_server_certificate((self.domain, 443))
+        print('cert done')
         bycert = cert.encode('utf-8')
+        print('bcert done')
         content = x509.load_pem_x509_certificate(bycert, default_backend())
         self.logger.info(content)
         print('Done')
@@ -112,6 +117,7 @@ class CertChecker:
             key = attribute.oid._name
             val = attribute.value
             self.logger.info('{0}: {1}'.format(key, val))
+            print('{0}: {1}'.format(key, val))
             # check if domain name coinsides with the Common Name
             if key == 'commonName' and self.domain.lower() in val.lower():
                 self.logger.info(self.domain, val)
@@ -127,6 +133,8 @@ class CertChecker:
         san = self.content.extensions.get_extension_for_class(
             x509.SubjectAlternativeName)
         self.logger.info(
+            'SAN: {0}'.format(san.value.get_values_for_type(x509.DNSName)))
+        print(
             'SAN: {0}'.format(san.value.get_values_for_type(x509.DNSName)))
         return True
 
