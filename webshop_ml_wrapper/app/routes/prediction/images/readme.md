@@ -1,1 +1,0 @@
-In this folder the screenshots will be placed.

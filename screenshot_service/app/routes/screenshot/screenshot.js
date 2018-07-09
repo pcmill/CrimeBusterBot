@@ -29,13 +29,12 @@ function Screenshot() {
                     page.close();
 
                     const folder = path.resolve(relativeFolder);
-                    console.log(folder);
                     res.status(200);
                     res.send({ success: true, imageName: `${imageName}.png`, imageLocation: `${folder}/${imageName}.png`});
 
                 } catch(error) {
                     res.status(500);
-                    res.send({ success: false, message: 'Something went wrong trying to get a prediction', error: error});
+                    res.send({ success: false, message: 'Something went wrong trying to get a screenshot', error: error});
                 }
             })();
         } else {

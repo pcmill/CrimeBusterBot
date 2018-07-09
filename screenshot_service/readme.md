@@ -1,4 +1,4 @@
-# Prediction service
+# Screenshot service
 
 ## Starting service
 
