@@ -12,6 +12,8 @@ from urllib.parse import urlparse as urlparser
 
 class CertChecker:
     '''Verifies the TLS/SSL certificate of a website.'''
+    # TODO: Implement SNI check: ssl.HAS_SNI
+    # https://stackoverflow.com/questions/19145097/getting-certificate-chain-with-python-3-3-ssl-module
 
     logger = logging.getLogger('cbb.cert-check')
     logger.setLevel('INFO')
