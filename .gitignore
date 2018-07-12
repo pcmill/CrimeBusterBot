@@ -3,3 +3,5 @@
 *.tmp
 *.temp
 __pycache__/
+
+test.py
