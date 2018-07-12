@@ -33,21 +33,26 @@ class CertChecker:
         if not self._test_connection():
             return False
 
+        # get certificate content
         self.content = self._get_content()
         self.logger.info('Initialising TLS/SSL certificate check ...')
         if not self.domain:
             return False
 
+        # get Subject Alternative Names
+        san_name = self._get_extensions()
+
+        # get subject "Common Name"
         subj_name = self._verify_subject()
-        if not subj_name:
-            san_list = self._get_extensions()
-            for name in san_list:
-                if self.domain in name:
-                    subj_name = True
+        if subj_name == 'nocn' and san_name:
+            subj_name = True
+        else:
+            subj_name = False
 
         return all((
             self._verify_version(),
             self._verify_date(),
+            san_name,
             subj_name,
 #            self._verify_issuer(),
         ))
@@ -139,19 +144,25 @@ class CertChecker:
     def _verify_subject(self):
         self.logger.info('Verifying certificate subject ...')
         print('Verifying certificate subject ...')
+        cn = False
         for attribute in self.content.subject:
             key = attribute.oid._name
             val = attribute.value
             self.logger.info('{0}: {1}'.format(key, val))
             print('{0}: {1}'.format(key, val))
             # check if domain name coinsides with the Common Name
-            if key == 'commonName' and self.domain.lower() in val.lower():
-                self.logger.info(self.domain, val)
-                print('OK')
-                return True
+            if key == 'commonName':
+                cn = True
+                if self.domain.lower() in val.lower():
+                    self.logger.info(self.domain, val)
+                    print('OK')
+                    return True
 
-        print('No CN field in the certificate.')
-        self.logger.info('No CN field in the certificate.')
+        if not cn:
+            print('No CN field in the certificate.')
+            self.logger.info('No CN field in the certificate.')
+            return 'nocn'
+
         return False
 
     # TODO
@@ -164,7 +175,11 @@ class CertChecker:
         san_list = san.value.get_values_for_type(x509.DNSName)
         self.logger.info('SAN: {0}'.format(san_list))
         print('SAN: {0}'.format(san_list))
-        return san_list
+        for name in san_list:
+            if self.domain in name:
+                return True
+
+        return False
 
     # TODO
     def _verify_issuer(self):
