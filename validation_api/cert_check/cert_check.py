@@ -18,8 +18,7 @@ class CertChecker:
     # https://stackoverflow.com/questions/19145097/getting-certificate-chain-with-python-3-3-ssl-module
 
     logger = logging.getLogger('cbb.cert-check')
-    level = logging.getLevelName('INFO')
-    logger.setLevel(level)
+    logger.setLevel(logging.INFO)
 
     def __init__(self, url):
         # see also https://stackoverflow.com/a/7691293
