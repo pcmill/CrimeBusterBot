@@ -4,6 +4,7 @@ import sys
 import os
 import glob
 import re
+import json
 import numpy as np
 import cv2
 
@@ -88,18 +89,15 @@ def upload():
 
         # Make prediction
         preds = model_predict(file_path, model)
-        print(preds)
-        preds = preds.argmax(axis=-1)
-        print(preds)
+        prediction = preds.tolist()
 
         os.remove(file_path)
 
-        if preds[0] == 0:
-            return('Nep Webshop')
-        elif preds[0] == 1:
-            return('Echte Webshop')
-        else:
-            return('Normale website')
+        return json.dumps({
+            'fake': round(prediction[0][0], 3),
+            'good': round(prediction[0][1], 3),
+            'normal': round(prediction[0][2], 3)
+        });
     return None
 
 
