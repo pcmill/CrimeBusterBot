@@ -22,4 +22,7 @@ class CertCheckerTests(unittest.TestCase):
         self.assertEqual(test_data, checker.domain)
 
     def test_get_content(self):
-        self.assertTrue(isinstance(self.checker.content, cryptography.hazmat.backends.openssl.x509._Certificate))
+        self.assertTrue(isinstance(
+            self.checker.content,
+            cryptography.hazmat.backends.openssl.x509._Certificate
+        ))

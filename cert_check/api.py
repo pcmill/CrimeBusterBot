@@ -2,7 +2,7 @@
 
 from flask_api import FlaskAPI
 
-from cert_check.cert_check import CertChecker
+from cert_check import CertChecker
 
 
 app = FlaskAPI(__name__)
